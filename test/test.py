@@ -76,7 +76,11 @@ async def send_instr(dut, instr):
 
 async def read_reg(dut, idx):
     """Read register directly via cocotb internal signal access."""
-    return int(dut.user_project.regfile[idx].value)
+    dut.uio_in.value = (idx & 0x7) << 2
+    await Timer(2, unit="ns")
+    val = int(dut.uio_out.value)
+    dut.uio_in.value = 0
+    return val
 
 async def run_rom(dut, rom, cycles):
     for _ in range(cycles):
