@@ -1,20 +1,31 @@
-<!---
-
-This file is used to generate your project datasheet. Please fill in the information below and delete any unused
-sections.
-
-You can also include images in this folder and reference them in the markdown. Each image must be less than
-512 kb in size, and the combined size of all images must be less than 1 MB.
--->
-
 ## How it works
 
-Explain how your project works
+Basic8 is a minimal 8-bit CPU with the following features:
+
+- 8 general purpose 8-bit registers (r0 hardwired to 0)
+- 8-bit program counter (PC)
+- 16-bit instruction format
+- ALU operations: ADD, SUB, OR, XOR, AND, SLL, SRL, SRA
+- Immediate operations: ADDI, ANDI, ORI, XORI (6-bit immediate)
+- Branch instructions: BEQ, BNE (PC-relative, 6-bit offset)
+- Jump and link: JAL (PC-relative, saves return address)
+
+Instructions are 16-bit and loaded in two cycles via ui_in:
+- Cycle 1: uio_in[0]=1 — ui_in high byte is latched into internal register
+- Cycle 2: uio_in[1]=1 — ui_in low byte is combined with the latched high byte to form the full 16-bit instruction, which is then decoded and executed
+
+The program counter (PC) is output on uo_out, allowing an external controller to feed instructions from a ROM.
 
 ## How to test
 
-Explain how to use your project
+Connect a ROM (instruction memory) externally. On each instruction:
+1. Read PC from uo_out
+2. Send high byte of ROM[PC] via ui_in with uio_in[0]=1
+3. Send low byte of ROM[PC] via ui_in with uio_in[1]=1
+4. Repeat
+
+See test/test.py for a cocotb testbench with full instruction set coverage.
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+None required. The CPU is driven entirely through the ui_in and uio_in pins.
