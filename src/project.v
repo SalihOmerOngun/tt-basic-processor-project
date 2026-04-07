@@ -89,11 +89,9 @@ module tt_um_basic8 (
  
             // Phase 2: execute
             if (uio_in[1]) begin
-                // register write
                 if (wr_en && rd != 3'd0)
                     regfile[rd] <= wdata;
  
-                // PC update
                 if (pc_jump)
                     pc <= pc_target;
                 else
