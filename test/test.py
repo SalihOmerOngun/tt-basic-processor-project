@@ -221,7 +221,7 @@ async def check_r0_hardwired(dut):
 @cocotb.test()
 async def test_project(dut):
     """tt_um_basic8 — 8-bit CPU full test suite"""
-    clock = Clock(dut.clk, 10, unit="ns")
+    clock = Clock(dut.clk, 100, unit="ns")
     cocotb.start_soon(clock.start())
 
     await check_i_type(dut)

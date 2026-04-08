@@ -5,7 +5,7 @@ project:
   discord:      ""
   description:  "8-bit minimal CPU with 8 registers, ALU, branches and JAL"
   language:     "Verilog"
-  clock_hz:     0
+  clock_hz:     10000000
   tiles: "1x1"
   top_module:  "tt_um_basic8"
   source_files:
