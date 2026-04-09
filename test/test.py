@@ -115,7 +115,12 @@ async def send_instr_then_load_data(dut, instr, data_byte):
     await Timer(1, unit="ns")
 
 async def read_reg(dut, idx):
-    return int(dut.user_project.regfile[idx].value)
+    try:
+        return int(dut.user_project.regfile[idx].value)
+    except AttributeError:
+        dut.ui_in.value = (idx & 0x7) << 4
+        await Timer(2, unit="ns")
+        return int(dut.uio_out.value)
 
 async def run_rom(dut, rom, cycles):
     for _ in range(cycles):
@@ -357,11 +362,15 @@ async def check_store(dut):
     addr, data = await exec_store(dut, STORE(4, 1, 1))
     assert data == 0xFF, f"STORE data=0xFF: beklenen 0xFF, gelen {hex(data)}"
 
-    # PC STORE sonrasi ilerliyor mu: iç pc register'ini dogrudan oku
-    pc_before = int(dut.user_project.pc.value)
+    # PC STORE sonrasi ilerliyor mu
+    # Iki NOP gonder: birinci NOP'tan sonra uo_out=PC kesin, orada pc_before al.
+    # Sonra STORE + NOP, pc_after = pc_before + 2 olmali.
+    await send_instr(dut, NOP())
+    pc_before = int(dut.uo_out.value)
     await exec_store(dut, STORE(2, 1, 0))
-    pc_after = int(dut.user_project.pc.value)
-    assert pc_after == (pc_before + 1) & 0xFF, f"STORE sonrasi PC ilerlemedi: beklenen {hex((pc_before+1)&0xFF)}, gelen {hex(pc_after)}"
+    await send_instr(dut, NOP())
+    pc_after = int(dut.uo_out.value)
+    assert pc_after == (pc_before + 2) & 0xFF, f"STORE sonrasi PC ilerlemedi: beklenen {hex((pc_before+2)&0xFF)}, gelen {hex(pc_after)}"
 
     dut._log.info("STORE PASSED")
 
