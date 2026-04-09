@@ -1,5 +1,3 @@
-// 8-bit ALU
-// sel: 000=ADD 001=SUB 010=OR 011=XOR 100=AND 101=SLL 110=SRL 111=SRA
 module alu (
     input  wire [7:0] a,
     input  wire [7:0] b,
