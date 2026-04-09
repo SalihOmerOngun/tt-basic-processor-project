@@ -8,7 +8,7 @@
 
 Basic8 is a minimal single-cycle 8-bit processor. It features 8 general-purpose 8-bit registers (r0–r7); r0 is hardwired to zero. All arithmetic and logic operations pass through a single ALU. For R-type instructions the second operand comes from a source register; for I-type instructions it comes from the sign-extended 6-bit immediate. The ALU operation is selected via a 3-bit funct3 signal — taken directly from the instruction for R-type, and derived from the opcode for I-type.
 
-Instructions and data share a single external memory bus (e.g. SPI Flash). The CPU outputs a memory address on `uo_out` and receives a byte on `ui_in`. During normal execution this address is the PC; during LOAD/STORE it is the computed data address (`rs1 + sext(imm6)`).
+Instructions and data share a single external memory bus (e.g. SPI Flash). The CPU outputs a memory address on `uo_out` and receives a byte on `ui_in`. During normal execution this address is the PC; during LOAD/STORE it is the computed data address (`rs1 + sign_ext(imm6)`).
 
 Since instructions are 16-bit wide, they are loaded in two cycles:
 - **Cycle 1:** `uio_in[0]=1` — `ui_in` high byte is latched into `instr_hi`
@@ -28,15 +28,15 @@ For LOAD, the CPU stalls (holds PC) until the external controller asserts `mem_v
 | `0000` (f3=101) | SLL  | `[15:13]=f3 [12:10]=rs2 [9:7]=rs1 [6:4]=rd [3:0]=0000` | `rd = rs1 << rs2` |
 | `0000` (f3=110) | SRL  | `[15:13]=f3 [12:10]=rs2 [9:7]=rs1 [6:4]=rd [3:0]=0000` | `rd = rs1 >> rs2` |
 | `0000` (f3=111) | SRA  | `[15:13]=f3 [12:10]=rs2 [9:7]=rs1 [6:4]=rd [3:0]=0000` | `rd = rs1 >>> rs2` |
-| `0001` | ADDI | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0001` | `rd = rs1 + sext(imm6)` |
-| `0010` | ANDI | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0010` | `rd = rs1 & sext(imm6)` |
-| `0011` | ORI  | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0011` | `rd = rs1 \| sext(imm6)` |
-| `0100` | XORI | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0100` | `rd = rs1 ^ sext(imm6)` |
-| `0101` | BEQ  | `[15:10]=imm6 [9:7]=rs1 [6:4]=rs2 [3:0]=0101` | `if rs1==rs2: PC = PC + sext(imm6)` |
-| `0110` | BNE  | `[15:10]=imm6 [9:7]=rs1 [6:4]=rs2 [3:0]=0110` | `if rs1!=rs2: PC = PC + sext(imm6)` |
-| `0111` | JAL  | `[15:10]=imm6 [9:7]=--- [6:4]=rd  [3:0]=0111` | `rd = PC+1, PC = PC + sext(imm6)` |
-| `1000` | LOAD | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd  [3:0]=1000` | `rd = mem[rs1 + sext(imm6)]` |
-| `1001` | STORE| `[15:10]=imm6 [9:7]=rs1 [6:4]=rs2 [3:0]=1001` | `mem[rs1 + sext(imm6)] = rs2` |
+| `0001` | ADDI | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0001` | `rd = rs1 + sign_ext(imm6)` |
+| `0010` | ANDI | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0010` | `rd = rs1 & sign_ext(imm6)` |
+| `0011` | ORI  | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0011` | `rd = rs1 \| sign_ext(imm6)` |
+| `0100` | XORI | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd [3:0]=0100` | `rd = rs1 ^ sign_ext(imm6)` |
+| `0101` | BEQ  | `[15:10]=imm6 [9:7]=rs1 [6:4]=rs2 [3:0]=0101` | `if rs1==rs2: PC = PC + sign_ext(imm6)` |
+| `0110` | BNE  | `[15:10]=imm6 [9:7]=rs1 [6:4]=rs2 [3:0]=0110` | `if rs1!=rs2: PC = PC + sign_ext(imm6)` |
+| `0111` | JAL  | `[15:10]=imm6 [9:7]=--- [6:4]=rd  [3:0]=0111` | `rd = PC+1, PC = PC + sign_ext(imm6)` |
+| `1000` | LOAD | `[15:10]=imm6 [9:7]=rs1 [6:4]=rd  [3:0]=1000` | `rd = mem[rs1 + sign_ext(imm6)]` |
+| `1001` | STORE| `[15:10]=imm6 [9:7]=rs1 [6:4]=rs2 [3:0]=1001` | `mem[rs1 + sign_ext(imm6)] = rs2` |
 
 > **imm6:** 6-bit signed immediate, always sign-extended to 8 bits. **f3** = funct3 field `[15:13]`, selects ALU operation for R-type instructions.
 
